@@ -1,0 +1,422 @@
+:root{
+    --CorDeFundoMenu: #b4ed49ad;
+    --CorDaFonteMenu: #000000;
+     --CorHoverMenu:  rgb(229, 139, 83);
+    --CorDoBody: rgba(217, 214, 168, 0.871);
+    --CorBonita:#F0F8FF;}
+
+    *{
+        margin: 0;
+        padding: 0;
+        text-decoration: none;
+        
+    }
+
+    /* body */
+html{
+  font-size:62.5%;
+  /* Este estilo define o tamanho da fonte para 62,5% do tamanho padrão do navegador */
+  overflow-x: hidden;
+  /* oculta o conteúdo que se estende para fora da área visível horizontalmente */
+  scroll-padding-top:9rem ;
+  /* Define o espaço de enchimento superior (espaço acima do conteúdo) 
+  para 9 unidades de medida "rem" (root em) */
+  scroll-behavior: smooth;
+  /* controla o comportamento da rolagem da página  */
+    }
+
+    
+body{
+    background-color:var(--CorDoBody) ;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    font-size: 1.6vw;
+    /* serve para deixar o tamanho da fonte responsivo */
+    
+} 
+.cabeca{
+    background-color: var(--CorDeFundoMenu);
+    display: flex;
+    justify-content: space-between;
+    padding:5px;
+    position: fixed;
+    /* permanece na mesma posição mesmo quando rolar a página */
+    top:0;
+    left:0;
+    right:0;
+    z-index:5;
+    /* sobrepõe o elementos sobre outros */
+}
+
+
+.cabeca .logo img{
+    height: 4vw;
+    /* afeta a altura do header */
+}
+
+.cabeca .navegar a{
+    font-size: 2vw;
+    /* tamanho da fonte será 2.2 vezes o tamanho da fonte padrão do elemento pai. */
+    align-items: center;
+    /* define como os elementos flexíveis devem ser alinhados no eixo transversal */
+    margin:auto 1vw;
+    /* o auto define uma margem automática no topo e na parte inferior 
+    e uma margem de 1 rem na direita e esquerda */
+    height: 100%;
+    color:black;
+    
+}
+
+.cabeca .navegar a:hover{
+    transition: 0.2s linear;
+    color:var(--CorHoverMenu);
+    padding-bottom: 0.5rem;
+    border-bottom: 0.5rem solid;
+}
+
+.paginicial{
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap; 
+    gap:100px 50px; 
+    padding-bottom: 6vw;
+}
+
+
+.paginicial .texto{
+    max-width: 60rem;
+    background-color:var(--CorBonita);
+    box-shadow: 10px 40px 20px rgba(2, 5, 39, 0.59);
+    min-height: 30vh;
+    border-radius: 25px ;
+    margin-left: 10vh;
+    margin-right: 3vh;
+    position: relative;
+    margin: 0 auto;
+}
+
+.paginicial .texto h3{
+    color: black;
+    font-size: 2rem;
+    padding: 120px 20px;
+    text-transform: uppercase;
+    text-align: right;
+    align-items: center;
+    /* define como os elementos flexíveis devem ser alinhados no eixo transversal */
+    margin-right: 10px;
+    text-align: left;
+}
+
+
+.paginicial .texto p{
+    color:black;
+    font-size:2rem;
+    padding: 20px;
+    text-align: right;
+    /* define o alinhamento horizontal do texto dentro de um elemento */
+    text-align: left;
+    word-wrap:break-word;
+}
+
+footer {
+    background-color: var(--CorDeFundoMenu);
+    color: var(--CorDaFonteMenu);
+    padding: 1rem;
+    text-align: center;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 4;
+}
+
+.footer-contato {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.footer-contato .dev {
+    margin-right: 0.5rem;
+    font-size: 2rem;
+}
+
+.footer-contato .rede img {
+    width: 30px; 
+    height: 30px; 
+    margin: 0 0.5rem;
+}
+
+main{
+    width: 100%;
+    text-align: center;
+    margin:0 auto;
+}
+
+
+
+.banner{
+    width: 100%;
+    text-align: center;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: row;
+    /* align-items: center; */
+    justify-content: space-around; 
+    position: relative; 
+    background-size: cover;
+    background-position: center;
+    overflow: hidden; /* Garante que apenas uma imagem seja visível por vez */
+    
+   
+
+
+}
+
+.banner img{
+    /* overflow: hidden; */
+    display: none; 
+    width: 40%;
+    max-width: 130vh; /* garante que as imagens não ultrapassem a largura do contêiner */
+    height: auto;    /* mantém a proporção da imagem */
+    /* display: none; */
+    margin:0 auto;
+
+   
+  
+}
+
+.banner h3{
+    color: black;
+}
+
+.banner h3:hover{
+    transition: 0.5s;
+    color: var(--CorBonita);
+    
+}
+
+.banner img.active {
+    display: block; /* Exibe a imagem com a classe "active" */
+  }
+  
+
+.di-btn{
+     position: absolute;
+            bottom: 50%;
+            left: 50%;
+            transform: translate(-50%,50%);
+            z-index: 1;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            width: 80%;
+
+}
+
+.di-btn button {
+    background-color: var(--CorDoBody);
+    color:black;
+    border: none;
+    padding: 1vw 2vw;
+    font-size: 1.6vw;
+    cursor: pointer;
+    transform: translateY(-50%);
+    margin: auto;
+
+
+}
+.di-btn button:hover{
+    transition: 0.5s;
+    color:var(--CorBonita);
+}
+.di-btn button:first-child{ 
+    margin-right:auto ;}
+
+.di-btn button:last-child{
+    margin-left: auto;
+}
+
+.di-btn input,
+.di-btn label {
+    display: none;
+}
+
+/* PRODUTOS */
+
+.caixa{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background-color: var(--CorDoBody);
+    width: 100%;
+    flex-wrap: wrap;
+    min-height:calc(100vh - 100px);
+    margin-bottom: 100px;
+    padding-top: 15vh;
+    
+}
+
+.fileira{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    max-width: 960px;
+    margin-bottom: 20px;
+}
+.caixa .cards{
+    flex:1;
+    max-width: 300px;
+    margin:0 10px;
+    box-sizing:border-box;
+    overflow: hidden; /* Impede que o texto da descrição afete a altura do contêiner */
+}
+
+
+.cards img{
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    object-fit: cover;
+} 
+
+.cards a{
+    color: var(--CorBonita);
+    border: 0.1vw solid var(--CorDeFundoMenu); 
+    border-radius: 1vw;
+    box-sizing: border-box;
+    background-color: var(--CorDeFundoMenu);
+}
+
+.cards a:hover{
+    transition: 0.5s;
+    color:var(--CorHoverMenu);
+}
+
+/* .cards p{
+        margin: 0;
+        padding: 0.5rem;
+    } */
+
+
+.caixa .fileira .cards h2{
+    word-wrap:break-word;
+} 
+/* Cadastro.php */
+.aviso {
+    background-color: var(--CorBonita);
+    color:black; 
+    padding: 1%;
+    text-align: center;
+    margin: 30px auto 0; 
+    border-radius: 10px;
+    max-width: 80%; 
+    position: fixed;
+    top: 0;
+    right: 24%;
+    margin-top: 6%;
+}
+
+.cadastro{ 
+    width: 25vw;
+    margin: 0 auto; 
+    padding: 2vw; 
+    border: 0.5vw solid #ccc; 
+                        /* Isso define a borda do elemento */
+                        /* vw é a largura da borda*/
+                        /*solid especifica o estilo da borda, que é uma linha sólida. */
+                        /* depois vem a cor da borda*/
+    border-radius: 20px;
+                        /* Isso define um raio para as bordas do elemento, arredondando os cantos.*/
+    box-shadow: 0 0 0.5vw rgba(0, 0, 0, 0.2);
+    background-color: aliceblue;
+    margin-top: 11%; 
+    
+}   
+
+fieldset{
+    border: none;
+}
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="submit"]{
+    width: 100%;
+    padding: 1vw;
+    margin-bottom: 2vw;
+    border: 0.1vw solid #ccc; 
+    border-radius: 0.5vw;
+    box-sizing: border-box;
+    /*garante que o padding não afete a largura total */
+
+}
+
+/* Login.php */
+.login{
+    width: 25vw/*ou 300px*/;
+    margin: 0 auto; 
+    padding: 2vw; 
+    border: 0.5vw solid #ccc; 
+                        /* Isso define a borda do elemento */
+                        /* px é a largura da borda*/
+                        /*solid especifica o estilo da borda, que é uma linha sólida. */
+                        /* depois vem a cor da borda*/
+    border-radius: 20px;
+                        /* Isso define um raio para as bordas do elemento, arredondando os cantos.*/
+    box-shadow: 0 0 0.5vw rgba(0, 0, 0, 0.2);
+    background-color: aliceblue;
+    margin-top: 11%; 
+}
+
+.login input[type="email"],
+.login input[type="password"]{
+    width: 100%;
+    padding: 1vw;
+    margin-bottom: 2vw;
+    border: 0.1vw solid #ccc; 
+    border-radius: 0.5vw;
+    box-sizing: border-box;
+    /*garante que o padding não afete a largura total */
+    transition: none;
+
+}
+
+
+
+
+/* Private.php */
+
+.tela-ve{ 
+    width: 25vw;
+    margin: 0 auto; 
+    padding: 2vw; 
+    border: 0.5vw solid #ccc; 
+                        /* Isso define a borda do elemento */
+                        /* vw é a largura da borda*/
+                        /*solid especifica o estilo da borda, que é uma linha sólida. */
+                        /* depois vem a cor da borda*/
+    border-radius: 20px;
+                        /* Isso define um raio para as bordas do elemento, arredondando os cantos.*/
+    box-shadow: 0 0 0.5vw rgba(0, 0, 0, 0.2);
+    background-color: aliceblue;
+    margin-top: 8%; 
+    
+}   
+
+
+input[type="text"],
+textarea[id="descricao"],
+input[type="number"],
+input[type="submit"]{
+    width: 100%;
+    padding: 1vw;
+    margin-bottom: 2vw;
+    border: 0.1vw solid #ccc; 
+    border-radius: 0.5vw;
+    box-sizing: border-box;
+}
+

@@ -1,0 +1,748 @@
+/**
+ * Namespace for the VDS JavaScript Library
+ */
+var vds = new function(view) {
+
+  this.getObjectByName = function(name) {
+    var current = view;
+    var parts = name.split('.');
+    for (var part; part = parts.shift();) {
+      if (current[part]) {
+        current = current[part];
+      } else {
+        return null;
+      }
+    }
+    if (current === view) {
+      return null;
+    }
+    return current;
+  }
+
+  this.provide = function(name) {
+    if (this.getObjectByName(name)) {
+      throw new Error('"' + name + '" already provided.');
+    }
+    var current = view;
+    var parts = name.split('.');
+    for (var part; part = parts.shift();) {
+      current[part] = current[part] || {};
+      current = current[part];
+    }
+  };
+
+  this.extend = function(Subclass, Superclass) {
+    Subclass.prototype = Object.create(Superclass.prototype || Superclass, {
+      constructor: {
+        value: Subclass,
+        writable: true,
+        configurable: true,
+        enumerable: false
+      }
+    });
+  };
+
+}(window);
+
+
+/**
+ * vds.events
+ */
+vds.provide('vds.events');
+
+
+/**
+ * vds.events.Event
+ */
+vds.events.Event = function(type) {
+  this.type = type;
+  this.target = null;
+  this.currentTarget = null;
+};
+
+
+/**
+ * vds.events.EventTarget
+ * 
+ * @constructor
+ */
+vds.events.EventTarget = function() {
+  this.listeners = {};
+};
+
+vds.events.EventTarget.prototype.addEventListener = function(type, listener) {
+  if (!type || !listener) {
+    return;
+  }
+  this.removeEventListener(type, listener);
+  if (!(type in this.listeners)) {
+    this.listeners[type] = [];
+  }
+  this.listeners[type].push(listener);
+};
+
+vds.events.EventTarget.prototype.removeEventListener = function(type, listener) {
+  if (!type || !listener || !(type in this.listeners)) {
+    return;
+  }
+  var listeners = this.listeners[type];
+  var index = listeners.indexOf(listener);
+  if (index >= 0) {
+    listeners.splice(index, 1);
+  }
+  if (listeners.length == 0) {
+    delete this.listeners[type];
+  }
+};
+
+vds.events.EventTarget.prototype.dispatchEvent = function(event) {
+  if (!event || !event.type || !(event.type in this.listeners)) {
+    return;
+  }
+  event.currentTarget = this;
+  if (!event.target) {
+    event.target = this;
+  }
+  var listeners = this.listeners[event.type];
+  for (var i = 0; i < listeners.length; i++) {
+    var listener = listeners[i];
+    if (listener instanceof Function) {
+      listener.call(this, event);
+    } else if (listener.handleEvent) {
+      listener.handleEvent(event);
+    }
+  }
+};
+
+
+/**
+ * vds.Cache
+ */
+vds.Cache = function() {
+
+  var o = {};
+
+  this.get = function(key) {
+    return o[key];
+  };
+
+  this.set = function(key, value) {
+    o[key] = value;
+  };
+
+  this.has = function(key) {
+    return o.hasOwnProperty(key);
+  };
+
+  this.remove = function(key) {
+    delete o[key];
+  };
+
+  this.clear = function() {
+    o = {};
+  };
+
+};
+
+vds.cache = new vds.Cache();
+
+
+/**
+ * Namespace for Date related utilities
+ */
+vds.provide('vds.date');
+
+
+/**
+ * vds.date
+ */
+vds.date.formatTime = function(ms) {
+  var h = Math.floor(ms / 36e5);
+  var m = Math.floor((ms % 36e5) / 6e4);
+  var s = Math.floor((ms % 6e4) / 1e3);
+  var p = function(n) {
+    return ('00' + n).slice(-2);
+  };
+  return p(h) + ':' + p(m) + ':' + p(s);
+};
+
+vds.date.formatMinutes = function(value) {
+  var days = Math.floor(value / 60 / 24);
+  var hours = Math.floor(value / 60) % 24;
+  var minutes = value % 60;
+  var result = '';
+  if (days > 0) {
+    result += days;
+    if (days > 1) {
+      result += ' ' + vds.cache.get('TIME_DAYS');
+    } else {
+      result += ' ' + vds.cache.get('TIME_DAY');
+    }
+  }
+  if (hours > 0) {
+    result += hours;
+    if (hours > 1) {
+      result += ' ' + vds.cache.get('TIME_HOURS');
+    } else {
+      result += ' ' + vds.cache.get('TIME_HOUR');
+    }
+  }
+  if (minutes > 0) {
+    result += minutes;
+    if (minutes > 1) {
+      result += ' ' + vds.cache.get('TIME_MINUTES');
+    } else {
+      result += ' ' + vds.cache.get('TIME_MINUTE');
+    }
+  }
+  return result;
+};
+
+
+/**
+ * Namespace for DOM related utilities.
+ */
+vds.provide('vds.dom');
+
+vds.dom.empty = function(node) {
+  while (node.hasChildNodes()) {
+    node.removeChild(node.lastChild);
+  }
+  return node;
+};
+
+vds.dom.preload = function(url) {
+  if (Image) {
+    (new Image()).src = url;
+  }
+};
+
+vds.dom.hide = function(element) {
+  element.style.display = 'none';
+};
+
+vds.dom.show = function(element) {
+  element.style.display = null;
+};
+
+
+/**
+ * Namespace for HTTP related utilities.
+ */
+vds.provide('vds.http');
+
+
+// TODO: vds.http.objectToQuery
+// TODO: vds.http.queryToObject
+
+
+/**
+ * vds.http.get
+ */
+vds.http.get = function(url, params, callback, dontParse) {
+  try {
+    // TODO: use vds.http.objectToQuery
+    var query = Object.keys(params).map(function(key) {
+      return encodeURIComponent(key) + '=' + encodeURIComponent(params[key]);
+    }).join('&');
+    if (query) {
+      url += '?' + query;
+    }
+    var request = new XMLHttpRequest();
+    request.onreadystatechange = function() {
+      if (request.readyState == 4) {
+        if (request.status == 200) {
+          var response = null;
+          try {
+            if (dontParse) {
+              response = request.responseText;
+            } else {
+              response = JSON.parse(request.responseText);
+            }
+          } catch (e) {
+            callback(e);
+            return;
+          }
+          callback(null, response);
+        } else {
+          callback(new Error('unable to get ' + url));
+        }
+      }
+    };
+    request.open('GET', url);
+    request.timeout = 10000; // 10 seconds
+    request.send();
+  } catch (e) {
+    callback(e);
+  }
+};
+
+
+/**
+ * vds.http.post
+ */
+vds.http.post = function(url, params, callback, dontParse) {
+  try {
+    // TODO: use vds.http.objectToQuery
+    var data = Object.keys(params).map(function(key) {
+      return encodeURIComponent(key) + '=' + encodeURIComponent(params[key]);
+    }).join('&');
+    var request = new XMLHttpRequest();
+    request.onreadystatechange = function() {
+      if (request.readyState == 4) {
+        if (request.status == 200) {
+          var response = null;
+          try {
+            if (dontParse) {
+              response = request.responseText;
+            } else {
+              response = JSON.parse(request.responseText);
+            }
+          } catch (e) {
+            callback(e);
+            return;
+          }
+          callback(null, response);
+        } else {
+          callback(new Error('unable to post ' + url));
+        }
+      }
+    };
+    request.open('POST', url);
+    request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    request.timeout = 10000; // 10 seconds
+    request.send(data);
+  } catch (e) {
+    callback(e);
+  }
+};
+
+
+
+
+/**
+ * vds.http.post
+ */
+vds.http.postSafari = function(url, params, callback, dontParse, retryCount) {
+	MAXRETRIES = 10;
+	retryCount = retryCount || 0;
+	// console.info("Retry Count: " + retryCount);
+	try {
+    // TODO: use vds.http.objectToQuery
+    var data = Object.keys(params).map(function(key) {
+      return encodeURIComponent(key) + '=' + encodeURIComponent(params[key]);
+    }).join('&');
+    // console.log("vds.http.postSafari initiated");
+    // console.log("  url = " + url);
+    // console.log("  data = " + data);
+    var request = new XMLHttpRequest();
+    request.onreadystatechange = function() {
+      // console.log("request.readyState = " + request.readyState);
+      if (request.readyState == 4) {
+        if (request.status == 200) {
+          var response = null;
+          try {
+            if (dontParse) {
+              response = request.responseText;
+            } else {
+              response = JSON.parse(request.responseText);
+            }
+          } catch (e) {
+            callback(e);
+            return;
+          }
+          
+          // console.info(request.status);
+          callback(null, response);
+        }
+        else if (request.status == 0 && retryCount < MAXRETRIES){
+        	retryCount += 1;
+    		setTimeout(function(){
+        		vds.http.postSafari(url, params, callback, dontParse, retryCount);	
+        	}, 100 * retryCount);	
+        }
+        else {
+        	// console.info(request.status);
+          callback(new Error('unable to post ' + url));
+        }
+      }
+    };
+    
+    request.open('POST', url);
+    request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    request.setRequestHeader('cache-control', 'no-cache');
+    request.timeout = 10000; // 10 seconds
+    request.send(data);
+  } catch (e) {
+    callback(e);
+  }
+};
+
+
+/**
+ * vds.logger
+ */
+vds.logger = new function(view) {
+
+  this.level = {};
+  Object.defineProperty(this.level, 'ALL',   {enumerable: true, value: -Infinity});
+  Object.defineProperty(this.level, 'DEBUG', {enumerable: true, value: 10000});
+  Object.defineProperty(this.level, 'INFO',  {enumerable: true, value: 20000});
+  Object.defineProperty(this.level, 'WARN',  {enumerable: true, value: 30000});
+  Object.defineProperty(this.level, 'ERROR', {enumerable: true, value: 40000});
+  Object.defineProperty(this.level, 'FATAL', {enumerable: true, value: 50000});
+  Object.defineProperty(this.level, 'OFF',   {enumerable: true, value: Infinity});
+
+  var level = this.level.INFO; // default level
+
+  // create dummy console if not present
+  if (!view['console']) {
+    view['console'] = {};
+  }
+  var console = view['console'];
+  if (!console['log']) {
+    console.log = function() {
+    };
+  }
+  if (!console['debug']) {
+    console.debug = console.log;
+  }
+  if (!console['info']) {
+    console.info = console.log;
+  }
+  if (!console['warn']) {
+    console.warn = console.log;
+  }
+  if (!console['error']) {
+    console.error = console.log;
+  }
+
+  this.getLevel = function() {
+    return level;
+  };
+
+  this.setLevel = function(value) {
+    if (typeof value !== 'number') {
+      throw new Error('value must be a number');
+    }
+    level = value;
+  };
+
+  this.log = function(str) {
+    if (level <= this.level.ALL) {
+      console.log(str);
+    }
+  };
+
+  this.debug = function(str) {
+    if (level <= this.level.DEBUG) {
+      console.debug(str);
+    }
+  };
+
+  this.info = function(str) {
+    if (level <= this.level.INFO) {
+      console.info(str);
+    }
+  };
+
+  this.warn = function(str) {
+    if (level <= this.level.WARN) {
+      console.warn(str);
+    }
+  };
+
+  this.error = function(str) {
+    if (level <= this.level.ERROR) {
+      console.error(str);
+    }
+  };
+
+}(window);
+
+
+/**
+ * vds.Template
+ * 
+ * Scriptlet:  <# code #>
+ * Expression: <#= code #>
+ * Comment:    <#-- comment --#>
+ * 
+ * Implicit Objects:
+ *   context
+ *   encodeHTML
+ *   encodeJS
+ *   print
+ *   result
+ */
+vds.Template = function(s) {
+
+  if (typeof s !== "string") {
+    throw new TypeError("argument must be a string");
+  }
+
+  // Encodes a string for use in a JavaScript string.
+  // Converts to a Unicode escape sequence:
+  //   000A LINE FEED
+  //   000D CARRIAGE RETURN
+  //   0022 " QUOTATION MARK
+  //   0027 ' APOSTROPHE
+  //   005C \ REVERSE SOLIDUS
+  //   2028 LINE SEPARATOR
+  //   2029 PARAGRAPH SEPARATOR
+  var encodeJS = function(s) {
+    return String(s).replace(/[\n\r"'\\\u2028\u2029]/g, function(c) {
+      return "\\u" + ("0000" + c.charCodeAt(0).toString(16)).slice(-4);
+    });
+  };
+
+  // Encodes a string for use in HTML.
+  // Converts to a hexadecimal numeric character reference:
+  //   0022 " QUOTATION MARK
+  //   0026 & AMPERSAND
+  //   0027 ' APOSTROPHE
+  //   003C < LESS-THAN SIGN
+  //   003E > GREATER-THAN SIGN
+  var encodeHTML = function (s) {
+    return String(s).replace(/["&'<>]/g, function (c) {
+      return "&#x" + ("0000" + c.charCodeAt(0).toString(16)).slice(-4) + ";";
+    });
+  };
+
+  var matcher = /<#--[\s\S]+?--#>|<#=([\s\S]+?)#>|<#([\s\S]+?)#>|$/g;
+
+  var body = "var result = '';\n";
+  body += "var print = function (s) { result += s; };\n";
+  body += "var encodeJS = " + encodeJS.toString() + ";\n";
+  body += "var encodeHTML = " + encodeHTML.toString() + ";\n";
+  body += "with (context || {}) {\n";
+
+  var index = 0;
+  s.replace(matcher, function(match, expression, scriptlet, offset) {
+    body += "result += '" + encodeJS(s.slice(index, offset)) + "';\n";
+    if (expression) {
+      body += "result += " + expression + ";\n";
+    }
+    if (scriptlet) {
+      body += scriptlet + "\n";
+    }
+    index = offset + match.length;
+    return match;
+  });
+
+  body += "}\n";
+  body += "return result;\n";
+
+  var func = new Function("context", body);
+  this.render = func.bind({});
+
+}
+
+
+/**
+ * vds.models
+ */
+vds.provide('vds.models');
+
+
+/**
+ * vds.models.Model
+ * 
+ * @constructor
+ */
+vds.models.Model = function() {
+  vds.events.EventTarget.call(this);
+};
+
+vds.extend(vds.models.Model, vds.events.EventTarget);
+
+
+/**
+ * vds.views
+ */
+vds.provide('vds.views');
+
+
+/**
+ * vds.views.View
+ * 
+ * @constructor
+ */
+vds.views.View = function(model, element) {
+  vds.events.EventTarget.call(this);
+  this.model = model;
+  this.element = element;
+  if (this.element) {
+    this.document = this.element.ownerDocument;
+  }
+  if (this.document) {
+    this.view = this.document.defaultView;
+  }
+};
+
+vds.extend(vds.views.View, vds.events.EventTarget);
+
+
+/**
+ * vds.controllers
+ */
+vds.provide('vds.controllers');
+
+
+/**
+ * vds.applications
+ */
+vds.provide('vds.applications');
+
+
+/**
+ * classList polyfill http://www.w3.org/TR/dom/#interface-domtokenlist
+ */
+
+(function(view) {
+
+  if (typeof view == 'undefined') {
+    return;
+  }
+  if (!('Element' in view)) {
+    return;
+  }
+  if (!('document' in view)) {
+    return;
+  }
+  if ('classList' in view.document.documentElement) {
+    return;
+  }
+
+  function check() {
+    var tokens = Array.prototype.slice.call(arguments);
+    while (tokens.length) {
+      var token = tokens.shift();
+      if (token === '') {
+        throw new SyntaxError(
+            'The string did not match the expected pattern.');
+      }
+      if (/\s/.test(token)) {
+        throw new SyntaxError('The string contains invalid characters.');
+      }
+    }
+  }
+
+  function update(classList) {
+    classList.element.className = classList.toString();
+  }
+
+  function ClassList(element) {
+    this.element = element;
+    var tokens = this.element.className.trim().split(/\s+/);
+    while (tokens.length) {
+      var token = tokens.shift();
+      if (token !== '') {
+        this.push(token);
+      }
+    }
+    update(this);
+  }
+
+  ClassList.prototype = [];
+
+  /**
+   * Returns the number of tokens. ClassList.prototype.length
+   */
+
+  /**
+   * Returns the token with index index.
+   */
+  ClassList.prototype.item = function(i) {
+    return this[i] || null;
+  };
+
+  /**
+   * Returns true if token is present, and false otherwise.
+   */
+  ClassList.prototype.contains = function(token) {
+    check(token);
+    return this.indexOf(token) !== -1;
+  };
+
+  /**
+   * Adds all arguments passed, except those already present.
+   */
+  ClassList.prototype.add = function() {
+    var tokens = arguments;
+    check.apply(this, tokens);
+    var updated = false;
+    for (var i = 0; i < tokens.length; i++) {
+      var token = tokens[i];
+      if (this.indexOf(token) === -1) {
+        this.push(token);
+        updated = true;
+      }
+    }
+    if (updated) {
+      update(this);
+    }
+  };
+
+  /**
+   * Removes arguments passed, if they are present.
+   */
+  ClassList.prototype.remove = function() {
+    var tokens = arguments;
+    check.apply(this, tokens);
+    var updated = false;
+    for (var i = 0; i < tokens.length; i++) {
+      var token = tokens[i];
+      var index = this.indexOf(token);
+      if (index !== -1) {
+        this.splice(index, 1);
+        updated = true;
+      }
+    }
+    if (updated) {
+      update(this);
+    }
+  };
+
+  /**
+   * If force is not given, "toggles" token, removing it if it's present
+   * and adding it if it's not. If force is true, adds token (same as
+   * add()). If force is false, removes token (same as remove()).
+   * 
+   * Returns true if token is now present, and false otherwise.
+   */
+  ClassList.prototype.toggle = function(token, force) {
+    check(token);
+    var result = this.contains(token);
+    if (result) {
+      if (force !== true) {
+        this.remove(token);
+        return false;
+      } else {
+        return true;
+      }
+    } else {
+      if (force === false) {
+        return false;
+      } else {
+        this.add(token);
+        return true;
+      }
+    }
+  };
+
+  ClassList.prototype.toString = function() {
+    return this.join(' ');
+  };
+
+  function classList() {
+    return new ClassList(this);
+  }
+
+  Object.defineProperty(view.Element.prototype, 'classList', {
+    get: classList,
+    enumerable: true,
+    configurable: true
+  });
+
+})(window);

@@ -1,0 +1,126 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yume.com</title>
+    <link rel="stylesheet" href="element.css">
+    <link rel="shortcut icon" href="IMG/favicon.jpg" type="image/x-icon">
+
+   
+</head>
+<body>
+    <header class="cabeca">
+         <a href="#" class="logo">
+           <img src="img/pixil-frame-0 (1).png" alt="Carregando...">
+        </a>
+    <nav class="navegar">
+        <a href="index.html">HOME</a>
+        <a href="Login.php">LOGIN</a>
+        <a href="Cadastro.php">CADASTRAR</a>
+        <a href="produtos.php">PRODUTOS</a>
+    </nav>
+    </header>
+    <main>
+<div class="banner">
+ <a href="produtos.php" >   
+ <!-- <img src="img/baixados (1).jpg" class="slide"> -->
+ <img src="img/Notebook ACER Aspire A515-52 15.6 HD i5 128GB SSD 8GB OUTLET  NETPC.jpg" class="slide">
+ <img src="img/Celular Xiaomi Redmi Poco X3 PRO 256gb 8GB 2 Chip Global Blonze.jpg" class="slide">
+ <img src="img/Celular Samsung SAM-G9600 Galaxy S9 64GB Morado R7.webp" class="slide">
+ <h3 href="produtos.php">Produtos</h3>
+ </a>
+
+  <div class="di-btn">
+    <!-- <input type="radio" id="b1" name="ape1" onclick="showSlide(0)" checked> -->
+    <!-- <label for="b1">1</label> -->
+
+    <input type="radio" id="b2" name="ape1" onclick="showSlide(0)" checked>
+    <label for="b1">1</label>
+
+    <input type="radio" id="b3" name="ape1" onclick="showSlide(1)">
+    <label for="b2">2</label>
+     
+    <input type="radio" id="b4" name="ape1" onclick="showSlide(2)">
+    <label for="b3">3</label>
+    
+    <button onclick="prevSlide()">❮</button>
+    <button onclick="nextSlide()">❯</button>
+  </div>
+</div>
+   </main>
+
+
+  <section class="paginicial">
+    <div class="texto">
+        <h3>Histórico</h3>
+    <p>Yume é um site e-commerce que foi criado em 2023 por Felipe Gonçalves (chefe da equipe de desenvolvimento Estácio) e sua equipe Estácio.</p>
+    </div>
+    <div class="texto">
+         <h3>Missão</h3>
+    <p>A palavra Yume significa "sonho" em japônes, e a nossa missão é essa: realizar os sonhos das pessoas que vendem ou compram tecnologia.</p>
+    </div>
+    <div class="texto">
+         <h3>Diferencial</h3>
+    <p>Sempre procuramos por produtos mais em conta para que todos possam ter a oportunidade de comprar ou vender seus produtos tecnológicos.</p>
+    </div>
+  </section>
+
+
+   <footer>
+ 
+   <div class="footer-contato">
+    <span class="dev"> Desenvolvido por Felipe Gonçalves</span>
+     <a href="https://github.com/FRG15" class="rede"><img src="IMG/Git.png" alt="G"></a>
+      <a href="https://www.linkedin.com/in/felipe-gon%C3%A7alves-201562269/recent-activity/all/"
+      class="rede"><img src="IMG/In.png" alt="L"></a>
+       <a href="https://www.facebook.com/felipelipegx" class="rede"> <img src="IMG/F.png" alt="F"></a>
+   </div>
+    
+     </footer> 
+
+<script>
+
+    var slides = document.querySelectorAll('.banner .slide');
+    var radioButtons = document.querySelectorAll('.di-btn input');
+    var cont = 0;
+    
+    setInterval(nextSlide, 5000);
+    
+    function showSlide(index) {
+      cont = index;
+      updateSlides();
+    }
+    
+    function nextSlide() {
+      cont = (cont + 1) % slides.length;
+      updateSlides();
+      updateRadioButtons();
+    }
+    
+    function updateSlides() {
+      slides.forEach((slide, index) => {
+        slide.classList.toggle('active', index === cont);
+      });
+    }
+    
+    function updateRadioButtons() {
+      radioButtons.forEach((radio, index) => {
+        radio.checked = index === cont;
+      });
+    }
+
+    function prevSlide() {
+        cont = (cont - 1 + slides.length) % slides.length;
+
+        updateSlides()
+        updateRadioButtons();
+    };
+ 
+    </script>
+</body>
+</html>

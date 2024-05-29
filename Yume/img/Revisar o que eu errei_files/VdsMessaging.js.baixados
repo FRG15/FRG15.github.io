@@ -1,0 +1,96 @@
+var vdsMessaging = null;
+
+VdsMessaging = function() {
+  var that = this;
+
+  var slix = vds.cache.get('SLIX');
+  var clientId = vds.cache.get('CLIENT_ID');
+  var noMessagesCount = 0;
+  var noMessagesLimit = 20;
+  var receiveInterval = null;
+  var receiveSleepInMillis = 5000;
+  var firstConnection = true;
+
+  this.connect = function() {
+    if (!receiveInterval) {
+      receiveInterval = setInterval(that.getMessages, receiveSleepInMillis);
+    }
+  }
+
+  this.disconnect = function() {
+    that.sendMessage("close");
+    if (receiveInterval) {
+      var oldReceiveInterval = receiveInterval;
+      receiveInterval = null;
+      window.clearInterval(oldReceiveInterval);
+    }
+  }
+
+  this.getMessages = function() {
+	var cacheBuster = new Date().getTime();
+    var url = '/virtuoso/delivery/pub-doc/2.0/messaging/lti.1.0/PTMessageReceive.html';
+    var params = { SLIX: slix, CLIENTID : clientId, TARGET: 'WEB_PAGE', CACHEBUSTER: cacheBuster };
+    vds.http.get(url, params, function(error, data) {
+      if (error) {
+        console.log('getMessages error = ' + error);
+      } else {
+        that.handleMessages(data);
+      }
+    }, true);
+  }
+
+  this.handleMessages = function(data) {
+    if (data && data.trim() !== "") {
+      if (firstConnection) {
+        firstConnection = false;
+        try {
+            clearPtMissingTimeout();
+        } catch (err) {
+        }
+      }
+      noMessagesCount = 0;
+      var messages = data.split("\n");
+      for (var i = 0; i < messages.length; i++) {
+        var message = messages[i];
+        if (message === 'keepalive') {
+          // Just ignore it
+        } else { 
+          vdsMessagingDispatch(message);
+        }
+      }
+    } else {
+      noMessagesCount++;
+
+      if (noMessagesCount >= noMessagesLimit) {
+        noMessagesCount = 0;
+        console.log("\nLost contact with other end\n");
+        // Do anything else for lost contact?
+      }
+    }
+  }
+
+  this.sendMessage = function(messageBody) {
+    var url = '/virtuoso/delivery/pub-doc/2.0/messaging/lti.1.0/PTMessageSend.html';
+    var params = { TARGET: 'PT_PLAYER' };
+    if (slix) {
+      params['SLIX'] = slix;
+    }
+    if (clientId) {
+      params['CLIENTID'] = clientId;
+    }
+    if (messageBody) {
+      params['MESSAGE'] = messageBody;
+    }
+    console.log("sendMessage() " + messageBody);
+    vds.http.postSafari(url, params, function(error, data) {
+      if (error) {
+        console.log('sendMessage error = ' + error);
+      }
+    }, true);
+  }
+
+  this.setSlix = function(slix) {
+    that.slix = slix;
+  }
+}
+
